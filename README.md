@@ -14,7 +14,20 @@ Joc de fizică pentru **Fizica distractivă 05 — Leneșul, greul și împinger
 
 La fiecare puf apar flacăra și **două săgeți egale, în sensuri opuse**: gazul într-o parte, nava în cealaltă. Săgeata verde arată în permanență viteza, deci și inerția: nava merge pe direcția ei până primește un alt puf.
 
-La final, fiecare misiune reușită dă **1–3 stele**, după cât de puțin combustibil (sau câte puține obiecte) ai folosit, și deschide o fișă **„Ai descoperit”** cu un exemplu **„În viața reală”**: centura de siguranță, coșul de supermarket plin, rachetele, rucsacul-rachetă SAFER al astronauților, navele de marfă care aprovizionează Stația Spațială Internațională. Stelele rămân salvate în browser (15 în total).
+La final, fiecare misiune reușită dă **1–3 stele**, după cât de puțin combustibil (sau câte puține obiecte) ai folosit, și deschide o fișă **„Ai descoperit”** cu un exemplu **„În viața reală”**: centura de siguranță, coșul de supermarket plin, rachetele, rucsacul-rachetă SAFER al astronauților, navele de marfă care aprovizionează Stația Spațială Internațională. Stelele rămân salvate în browser (15 la misiuni + 24 la trasee = 39).
+
+## Traseele pilotului (antrenament)
+
+Patru trasee cu porți numerotate, care se trec **în ordine**. Poarta galbenă e următoarea. Atingerea unui stâlp al porții sau a unui asteroid înseamnă „Bum!”. Fiecare traseu se joacă **fără colet** (1 t, un puf = 1 m/s) sau **cu colet** (3 t, un puf = 0,33 m/s, de 3 ori mai mult combustibil).
+
+| # | Traseul | Nivel | Ce cere | Andocare | Combustibil (fără / cu colet) |
+|---|---|---|---|---|---|
+| 1 | Linia dreaptă | ușor | 2 porți în linie; un singur puf ajunge | < 1,5 m/s | 10 / 30 |
+| 2 | Slalomul | mediu | 3 porți jos–sus–jos, printre 2 asteroizi | < 1,5 m/s | 30 / 90 |
+| 3 | Centura de asteroizi | greu | 4 porți mai înguste, 7 asteroizi, frânări planificate | < 1 m/s | 32 / 96 |
+| 4 | Întoarcerea | expert | culoarul de jos, urcare pe lângă stație, întoarcere spre stânga prin poarta 3; doi asteroizi care se mișcă sus-jos | < 1 m/s | 34 / 102 |
+
+Stelele se dau după pufurile folosite: fiecare traseu și fiecare variantă are stelele ei, 24 în total, salvate în browser. Toate cele 8 combinații au fost terminate cu un pilot automat. Traseul 3 fără colet se poate face în 11 pufuri.
 
 ## Laboratorul volantului
 

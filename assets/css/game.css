@@ -93,3 +93,12 @@ ul.where { padding-left: 0; list-style: none; margin: 8px 0 12px; display: grid;
 ul.where li { border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; background: var(--panel); }
 #p-lab h3 { margin-top: 20px; color: var(--accent-dark); }
 @media (max-width: 760px) { .flypad { grid-template-columns: 1fr; } }
+
+/* traseele pilotului */
+.routesbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin: 4px 0 8px; }
+.routesbar .rh { font-weight: 800; color: var(--accent-dark); }
+.routesbar .payload { display: flex; gap: 6px; align-items: center; font-size: .92rem; }
+.routes { grid-template-columns: repeat(4, 1fr); }
+.mcard .lvl { display: inline-block; font-size: .72rem; padding: 1px 8px; border-radius: 999px; font-weight: 700; color: #fff; }
+.lvl.l1 { background: #16a34a; } .lvl.l2 { background: #ca8a04; } .lvl.l3 { background: #ea580c; } .lvl.l4 { background: #b91c1c; }
+@media (max-width: 760px) { .routes { grid-template-columns: repeat(2, 1fr); } }

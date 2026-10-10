@@ -38,18 +38,53 @@ let S = null;          // starea misiunii
 let BEST = [0, 0, 0, 0, 0];
 try { const b = JSON.parse(localStorage_get("fd05-stars") || "null"); if (Array.isArray(b)) b.slice(0, 5).forEach((x, i) => BEST[i] = clamp(+x || 0, 0, 3)); } catch (e) { }
 
+/* ---------- TRASEELE PILOTULUI: 4 trasee, cu sau fără colet ----------
+   porțile se trec în ordine; „v” = poartă verticală (o treci mergând stânga–dreapta) */
+const ROUTES = [
+  { lvl: 1, ship: { x: 110, y: 270 }, port: 270, limit: 1.5, fuel: 10, par: 2,
+    gates: [{ x: 330, y: 270, h: 70 }, { x: 590, y: 270, h: 70 }], rocks: [] },
+  { lvl: 2, ship: { x: 110, y: 420 }, port: 280, limit: 1.5, fuel: 30, par: 10,
+    gates: [{ x: 300, y: 410, h: 60 }, { x: 500, y: 170, h: 60 }, { x: 730, y: 410, h: 65 }],
+    rocks: [{ x: 350, y: 285, r: 28 }, { x: 560, y: 285, r: 30 }] },
+  { lvl: 3, ship: { x: 110, y: 110 }, port: 250, limit: 1.0, fuel: 32, par: 14,
+    gates: [{ x: 270, y: 120, h: 50 }, { x: 430, y: 330, h: 55 }, { x: 610, y: 455, h: 55 }, { x: 800, y: 250, h: 48 }],
+    rocks: [{ x: 270, y: 265, r: 26 }, { x: 480, y: 150, r: 38 }, { x: 480, y: 490, r: 28 }, { x: 585, y: 315, r: 28 },
+            { x: 690, y: 160, r: 34 }, { x: 640, y: 350, r: 24 }, { x: 250, y: 420, r: 30 }] },
+  { lvl: 4, ship: { x: 110, y: 460 }, port: 160, limit: 1.0, fuel: 34, par: 16,
+    gates: [{ x: 300, y: 460, h: 50 }, { x: 650, y: 460, h: 50 }, { x: 500, y: 160, h: 50 }],
+    rocks: [{ x: 240, y: 300, r: 34 }, { x: 360, y: 310, r: 40 }, { x: 470, y: 300, r: 40 }, { x: 580, y: 310, r: 40 },
+            { x: 475, y: 470, r: 26, amp: 110, per: 12 }, { x: 650, y: 160, r: 28, amp: 110, per: 12 }] }
+];
+let RV = -1, PAYLOAD = false;
+let RBEST = [0, 0, 0, 0, 0, 0, 0, 0];
+try { const b = JSON.parse(localStorage_get("fd05-rstars") || "null"); if (Array.isArray(b)) b.slice(0, 8).forEach((x, i) => RBEST[i] = clamp(+x || 0, 0, 3)); } catch (e) { }
+function rIdx(r, pl) { return r * 2 + (pl ? 1 : 0); }
+
 /* stele de fundal, fixe */
 const STARS = [];
 (function () { let s = 7; const r = () => (s = (s * 9301 + 49297) % 233280) / 233280;
   for (let i = 0; i < 140; i++) STARS.push([r() * W, r() * H, r() * 1.4 + .3, r()]); })();
 
 /* ---------- pornirea unei misiuni ---------- */
-function startLevel(i) {
-  LV = i; const L = LEVELS[i];
+function startLevel(i) { LV = i; RV = -1; setupLevel(LEVELS[i]); }
+function startRoute(r) {
+  RV = r; LV = -1;
+  const R = JSON.parse(JSON.stringify(ROUTES[r])), k = PAYLOAD ? 3 : 1;   // masă de 3 ori mai mare → de 3 ori mai multe pufuri
+  R.rocks.forEach(o => o.y0 = o.y);
+  setupLevel({ ...R, id: "r" + (r + 1), kind: "ship", m: 1, route: r, payload: PAYLOAD,
+    fuel: Math.round(R.fuel * k), par: Math.round(R.par * k) });
+}
+function briefFor(L) {
+  if (L.route === undefined) return t("m" + L.id + ".brief");
+  return t("r" + (L.route + 1) + ".b") + (L.payload ? t("routes.plNote") : "");
+}
+function setupLevel(L) {
   S = { L, state: "play", fx: [], parts: [], puffs: 0, said: {}, t: 0, endTimer: 0, result: null };
   if (L.kind === "ship") {
     S.x = L.ship.x; S.y = L.ship.y; S.vx = 0; S.vy = 0; S.m = L.m; S.fuel = L.fuel;
     S.cargo = L.cargo ? { x: L.cargo.x, y: L.cargo.y, m: L.cargo.m, att: false, dx: 0, dy: 0 } : null;
+    if (L.payload) S.cargo = { x: 0, y: 0, m: 2, att: true, w: 40, h: 30, dx: -(SHIP_W + 40) / 2, dy: 0 };   // colet mic și dens: 2 t
+    S.gi = 0;
   } else if (L.kind === "fly") {
     S.x = 0; S.y = 0; S.vx = 0; S.vy = 0;
     flyInit();
@@ -62,11 +97,12 @@ function startLevel(i) {
   $("padShip").classList.toggle("hidden", L.kind !== "ship");
   $("padThrow").classList.toggle("hidden", L.kind !== "astro");
   $("padFly").classList.toggle("hidden", L.kind !== "fly");
-  $("brief").innerHTML = t("m" + L.id + ".brief");
-  if (L.kind === "astro") { buildThrowPad(); sayF(() => t("say.m3start")); }
+  $("brief").innerHTML = briefFor(L);
+  if (L.route !== undefined) sayF(() => t("say.rstart"));
+  else if (L.kind === "astro") { buildThrowPad(); sayF(() => t("say.m3start")); }
   else if (L.kind === "fly") { flyPadUI(); sayF(() => t("fw.setup")); }
   else sayF(() => t("say.start"));
-  renderMissions(); updHUD();
+  renderMissions(); renderRoutes(); updHUD();
 }
 
 function shipMass() { return S.m + (S.cargo && S.cargo.att ? S.cargo.m : 0); }
@@ -131,7 +167,7 @@ function circRect(c, r) {
 }
 function bodies() {
   const out = [rect(S.x, S.y, SHIP_W, SHIP_H)];
-  if (S.cargo && S.cargo.att) out.push(rect(S.x + S.cargo.dx, S.y + S.cargo.dy, CARGO_W, CARGO_H));
+  if (S.cargo && S.cargo.att) out.push(rect(S.x + S.cargo.dx, S.y + S.cargo.dy, S.cargo.w || CARGO_W, S.cargo.h || CARGO_H));
   return out;
 }
 
@@ -145,6 +181,8 @@ function endLevel(kind, extra) {
 function step() {
   if (S && S.state === "play") {
     S.t++;
+    S.px = S.x; S.py = S.y;
+    if (S.L.rocks) S.L.rocks.forEach(o => { if (o.amp) o.y = o.y0 + o.amp * Math.sin(2 * Math.PI * S.t / (o.per * 60)); });
     S.x += S.vx * SCALE * DT; S.y += S.vy * SCALE * DT;
     const L = S.L, sp = speed();
 
@@ -163,6 +201,17 @@ function step() {
           sayF(() => t("say.cargoGot", { a: m0, b: mt, k: mt / m0 }), "good");
         } else { endLevel("crash", { why: "cargo" }); sayF(() => t("say.cargoHit"), "warn"); }
       }
+      // porțile traseului
+      if (L.gates && S.gi < L.gates.length) {
+        const g = L.gates[S.gi];
+        if ((S.px - g.x) * (S.x - g.x) <= 0 && S.px !== S.x && Math.abs(S.y - g.y) < g.h) {
+          S.gi++; const n = S.gi, m = L.gates.length;
+          S.fx.push({ kind: "gate", x: g.x, y: g.y, life: 40 });
+          sayF(() => t("say.gate", { n, m }), "good");
+        }
+      }
+      if (L.gates) for (const g of L.gates) for (const py of [g.y - g.h, g.y + g.h]) for (const b of bodies())
+        if (circRect({ x: g.x, y: py, r: 7 }, b)) { endLevel("crash", { why: "post" }); break; }
       // asteroizi
       if (L.rocks) for (const r of L.rocks) for (const b of bodies()) if (circRect(r, b)) { endLevel("crash", { why: "rock" }); break; }
       // stația
@@ -171,9 +220,10 @@ function step() {
       bs.forEach(b => { if (b.x + b.w > lead.x + lead.w) lead = b; });
       if (lead.x + lead.w >= STATION_X && S.state === "play") {
         const aligned = Math.abs(lead.y + lead.h / 2 - L.port) <= PORT_HALF - 4 || (lead === bs[0] && Math.abs(S.y - L.port) <= PORT_HALF - 4);
-        if (S.cargo && !S.cargo.att) {
+        if ((S.cargo && !S.cargo.att) || (L.gates && S.gi < L.gates.length)) {
           S.x -= (lead.x + lead.w - STATION_X) + 2; S.vx = -Math.abs(S.vx) * 0.4;
-          sayF(() => t("say.noCargo"), "warn");
+          if (L.gates && S.gi < L.gates.length) { const n = S.gi + 1; sayF(() => t("say.gates", { n }), "warn"); }
+          else sayF(() => t("say.noCargo"), "warn");
         } else if (!aligned) endLevel("crash", { why: "wall" });
         else if (sp <= L.limit) endLevel("win", { v: sp });
         else endLevel("crash", { why: "fast", v: sp });
@@ -206,7 +256,8 @@ function starsFor() {
   const L = S.L;
   if (L.kind === "astro") return S.used <= 1 ? 3 : S.used === 2 ? 2 : 1;
   if (L.kind === "fly") { const f = S.fw.lit / FW.night; return f >= 0.995 ? 3 : f >= 0.75 ? 2 : 1; }
-  return S.puffs <= L.par ? 3 : S.puffs <= L.par + 4 ? 2 : 1;
+  const extra = L.payload ? 8 : 4;
+  return S.puffs <= L.par ? 3 : S.puffs <= L.par + extra ? 2 : 1;
 }
 function showOverlay() {
   const r = S.result, L = S.L;
@@ -215,18 +266,22 @@ function showOverlay() {
   $("ovNext").classList.add("hidden");
   if (r.kind === "win") {
     const st = starsFor();
-    BEST[LV] = Math.max(BEST[LV], st); localStorage_set("fd05-stars", JSON.stringify(BEST));
+    if (L.route !== undefined) { const k = rIdx(L.route, L.payload); RBEST[k] = Math.max(RBEST[k], st); localStorage_set("fd05-rstars", JSON.stringify(RBEST)); }
+    else { BEST[LV] = Math.max(BEST[LV], st); localStorage_set("fd05-stars", JSON.stringify(BEST)); }
     $("ovTitle").textContent = t("ov.win");
     $("ovStars").textContent = "★".repeat(st) + "☆".repeat(3 - st);
-    $("ovText").textContent = L.kind === "fly" ? t("ov.flyTxt", { s: fmt(S.fw.lit / 60, 1) })
+    $("ovText").textContent = L.route !== undefined ? t("ov.routeTxt", { g: L.gates.length, v: fmt(r.v, 2), p: S.puffs })
+      : L.kind === "fly" ? t("ov.flyTxt", { s: fmt(S.fw.lit / 60, 1) })
       : t("ov.winTxt", { v: fmt(r.v, 2), p: L.kind === "astro" ? S.used : S.puffs, unit: t(L.kind === "astro" ? "ov.unitItem" : "ov.unitPuff") });
     $("ovLearn").classList.remove("hidden");
-    $("ovLearnH").textContent = t("l" + L.id + ".h");
-    $("ovLearnP").textContent = t("l" + L.id + ".p");
-    $("ovReal").textContent = t("l" + L.id + ".r");
+    const lk = L.route !== undefined ? (L.payload ? "lrB" : "lrA") : "l" + L.id;
+    $("ovLearnH").textContent = t(lk + ".h");
+    $("ovLearnP").textContent = t(lk + ".p");
+    $("ovReal").textContent = t(lk + ".r");
     $("ovNext").classList.remove("hidden");
-    $("ovNext").textContent = LV < LEVELS.length - 1 ? t("ov.next") : t("ov.last");
-    sayF(() => t("l" + L.id + ".h"), "good");
+    $("ovNext").textContent = L.route !== undefined ? (L.route < 3 ? t("ov.nextRoute") : (!L.payload ? t("ov.tryPayload") : t("ov.last")))
+      : LV < LEVELS.length - 1 ? t("ov.next") : t("ov.last");
+    sayF(() => t(lk + ".h"), "good");
   } else {
     $("ovStars").textContent = "";
     if (r.kind === "dark") { $("ovTitle").textContent = t("ov.dark"); $("ovText").textContent = t("ov.darkTxt", { s: fmt(S.fw.lit / 60, 1) }); }
@@ -234,14 +289,24 @@ function showOverlay() {
     else {
       $("ovTitle").textContent = t("ov.crash");
       $("ovText").textContent = r.why === "fast" ? t("ov.crashTxt", { v: fmt(r.v, 2), l: fmt(L.limit, 1) })
-        : r.why === "wall" ? t("ov.wallTxt") : r.why === "rock" ? t("ov.rockTxt") : t("say.cargoHit");
+        : r.why === "wall" ? t("ov.wallTxt") : r.why === "rock" ? t("ov.rockTxt") : r.why === "post" ? t("ov.postTxt") : t("say.cargoHit");
     }
   }
-  renderMissions();
+  renderMissions(); renderRoutes();
 }
-$("ovRetry").addEventListener("click", () => startLevel(LV));
-$("ovNext").addEventListener("click", () => { if (LV < LEVELS.length - 1) startLevel(LV + 1); else $("tab-quiz").click(); });
-$("btnRestart").addEventListener("click", () => startLevel(LV));
+function restartCurrent() { if (RV >= 0) startRoute(RV); else startLevel(LV); }
+$("ovRetry").addEventListener("click", restartCurrent);
+$("ovNext").addEventListener("click", () => {
+  if (RV >= 0) {
+    if (RV < 3) startRoute(RV + 1);
+    else if (!PAYLOAD) { PAYLOAD = true; payloadUI(); startRoute(0); }
+    else $("tab-quiz").click();
+  } else if (LV < LEVELS.length - 1) startLevel(LV + 1); else $("tab-quiz").click();
+});
+$("btnRestart").addEventListener("click", restartCurrent);
+function payloadUI() { $("plNo").setAttribute("aria-pressed", !PAYLOAD); $("plYes").setAttribute("aria-pressed", PAYLOAD); }
+$("plNo").addEventListener("click", () => { PAYLOAD = false; payloadUI(); renderRoutes(); if (RV >= 0) startRoute(RV); });
+$("plYes").addEventListener("click", () => { PAYLOAD = true; payloadUI(); renderRoutes(); if (RV >= 0) startRoute(RV); });
 
 /* ---------- desen ---------- */
 function draw() {
@@ -258,10 +323,11 @@ function draw() {
   if (L.kind === "fly") { drawFly(); return; }
   drawStation(L);
   if (L.rocks) L.rocks.forEach(drawRock);
+  if (L.gates) drawGates(L);
   if (L.kind === "ship") {
     if (S.cargo && !S.cargo.att) drawCargo(S.cargo.x, S.cargo.y, S.cargo.m);
     drawParts();
-    if (S.cargo && S.cargo.att) drawCargo(S.x + S.cargo.dx, S.y + S.cargo.dy, S.cargo.m);
+    if (S.cargo && S.cargo.att) drawCargo(S.x + S.cargo.dx, S.y + S.cargo.dy, S.cargo.m, S.cargo.w, S.cargo.h);
     if (S.state !== "ending" || S.result.kind === "win") drawShip();
   } else {
     drawParts();
@@ -328,15 +394,31 @@ function drawRock(r) {
   ctx.fillStyle = "#54473a"; ctx.beginPath(); ctx.arc(r.x - r.r * .3, r.y - r.r * .2, r.r * .18, 0, 7); ctx.fill();
   ctx.restore();
 }
-function drawCargo(x, y, m) {
+function drawCargo(x, y, m, w, h) {
+  w = w || CARGO_W; h = h || CARGO_H;
   ctx.save();
   ctx.fillStyle = "#f97316"; ctx.strokeStyle = "#9a3412"; ctx.lineWidth = 2;
-  ctx.fillRect(x - CARGO_W / 2, y - CARGO_H / 2, CARGO_W, CARGO_H); ctx.strokeRect(x - CARGO_W / 2, y - CARGO_H / 2, CARGO_W, CARGO_H);
+  ctx.fillRect(x - w / 2, y - h / 2, w, h); ctx.strokeRect(x - w / 2, y - h / 2, w, h);
   ctx.strokeStyle = "rgba(0,0,0,.25)";
-  for (let i = 1; i < 4; i++) { ctx.beginPath(); ctx.moveTo(x - CARGO_W / 2 + i * CARGO_W / 4, y - CARGO_H / 2 + 3); ctx.lineTo(x - CARGO_W / 2 + i * CARGO_W / 4, y + CARGO_H / 2 - 3); ctx.stroke(); }
-  ctx.fillStyle = "#fff"; ctx.font = "bold 15px system-ui, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  for (let i = 1; i < 4; i++) { ctx.beginPath(); ctx.moveTo(x - w / 2 + i * w / 4, y - h / 2 + 3); ctx.lineTo(x - w / 2 + i * w / 4, y + h / 2 - 3); ctx.stroke(); }
+  ctx.fillStyle = "#fff"; ctx.font = "bold " + (w < 50 ? 12 : 15) + "px system-ui, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
   ctx.fillText(t("c.cargo", { m: m }), x, y); ctx.textBaseline = "alphabetic";
   ctx.restore();
+}
+function drawGates(L) {
+  const pulse = 0.55 + 0.45 * Math.abs(Math.sin(Date.now() / 300));
+  L.gates.forEach((g, i) => {
+    const done = i < S.gi, next = i === S.gi;
+    const col = done ? "rgba(74,222,128,.35)" : next ? `rgba(250,204,21,${pulse})` : "rgba(148,163,184,.55)";
+    ctx.save();
+    ctx.strokeStyle = col; ctx.lineWidth = next ? 3 : 2; ctx.setLineDash(next ? [] : [6, 6]);
+    ctx.beginPath(); ctx.moveTo(g.x, g.y - g.h); ctx.lineTo(g.x, g.y + g.h); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = done ? "#4ade80" : next ? "#facc15" : "#94a3b8";
+    [g.y - g.h, g.y + g.h].forEach(py => { ctx.beginPath(); ctx.arc(g.x, py, 7, 0, 7); ctx.fill(); });
+    ctx.font = "bold 14px system-ui, sans-serif"; ctx.textAlign = "center";
+    ctx.fillText(done ? "✓" : String(i + 1), g.x, g.y - g.h - 14);
+    ctx.restore();
+  });
 }
 function drawShip() {
   const x = S.x, y = S.y;
@@ -369,6 +451,8 @@ function drawFx() {
       ctx.moveTo(fx + f.uy * 8, fy + f.ux * 8); ctx.lineTo(fx - f.ux * 26, fy - f.uy * 26); ctx.lineTo(fx - f.uy * 8, fy - f.ux * 8); ctx.fill();
       arrow(S.x + f.ux * 30, S.y + f.uy * 26, S.x + f.ux * 80, S.y + f.uy * 76, "#ef4444", 4, f.uy ? "" : t("c.push"));
       arrow(fx - f.ux * 28, fy - f.uy * 28, fx - f.ux * 78, fy - f.uy * 78, "#60a5fa", 4, f.uy ? "" : "gaz / gas");
+    } else if (f.kind === "gate") {
+      ctx.strokeStyle = "#4ade80"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(f.x, f.y, 70 - f.life, 0, 7); ctx.stroke();
     } else if (f.kind === "throw") {
       arrow(S.x - f.d * 26, S.y + 34, S.x - f.d * 86, S.y + 34, "#ef4444", 4, t("c.push"));
       arrow(S.x + f.d * 26, S.y + 34, S.x + f.d * 86, S.y + 34, "#60a5fa", 4, t("c.push"));
@@ -658,7 +742,18 @@ function renderMissions() {
     b.addEventListener("click", () => startLevel(i));
     box.appendChild(b);
   });
-  $("totalStars").textContent = t("total", { s: BEST.reduce((a, b) => a + b, 0) });
+  $("totalStars").textContent = t("total", { s: BEST.reduce((a, b) => a + b, 0) + RBEST.reduce((a, b) => a + b, 0), n: 15 + 24 });
+}
+function renderRoutes() {
+  const box = $("routes"); if (!box) return; box.innerHTML = "";
+  ROUTES.forEach((R, i) => {
+    const st = RBEST[rIdx(i, PAYLOAD)];
+    const b = document.createElement("button"); b.className = "mcard"; b.setAttribute("aria-pressed", i === RV);
+    b.innerHTML = `<span class="st">${"★".repeat(st)}${"☆".repeat(3 - st)}</span><span class="n">${t("route", { n: i + 1 })}${PAYLOAD ? " · 📦" : ""}</span>
+      <span class="tt">${t("r" + (i + 1) + ".t")}</span><span class="lvl l${R.lvl}">${t("lvl" + R.lvl)}</span>`;
+    b.addEventListener("click", () => startRoute(i));
+    box.appendChild(b);
+  });
 }
 
 /* ---------- taburi, temă, limbă ---------- */
@@ -715,13 +810,15 @@ function onLangChange() {
   buildQuiz();
   if (!S) return;
   renderMissions();
-  $("brief").innerHTML = t("m" + S.L.id + ".brief");
+  $("brief").innerHTML = briefFor(S.L);
+  renderRoutes();
   if (S.L.kind === "astro") buildThrowPad();
   if (S.L.kind === "fly") flyPadUI();
   labLang();
   if (S.state === "over") showOverlay();
   if (LAST_SAY) say(LAST_SAY[0](), LAST_SAY[1]);
 }
+payloadUI();
 startLevel(0);
 labInit();
 applyI18n();

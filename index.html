@@ -6,8 +6,8 @@
 <title>Curierul spațial</title>
 <meta name="description" content="Joc de fizică: pilotează o navă de marfă până la stația spațială. Inerția, masa, acțiunea-reacțiunea și volantul care înmagazinează energie, în 5 misiuni și un laborator. Fizica distractivă 05.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
-<link rel="stylesheet" href="assets/css/style.css">
-<link rel="stylesheet" href="assets/css/game.css">
+<link rel="stylesheet" href="assets/css/style.css?v=4">
+<link rel="stylesheet" href="assets/css/game.css?v=4">
 </head>
 <body>
 
@@ -34,6 +34,13 @@
   <!-- ============ JOCUL ============ -->
   <section id="p-game" class="panel">
     <div class="missions" id="missions"></div>
+    <div class="routesbar">
+      <span class="rh" data-i18n="routes.h">🏁 Traseele pilotului</span>
+      <span class="payload"><span data-i18n="routes.payload">Colet:</span>
+        <button class="opt" id="plNo" data-i18n="routes.no">fără colet · 1 t</button>
+        <button class="opt" id="plYes" data-i18n="routes.yes">cu colet · 3 t</button></span>
+    </div>
+    <div class="missions routes" id="routes"></div>
 
     <div class="brief" id="brief"></div>
 
@@ -166,7 +173,7 @@
   <p data-i18n="foot.2">Aplicație didactică · Fizica distractivă 05 · funcționează offline, fără internet.</p>
 </footer>
 
-<script src="assets/js/i18n.js"></script>
-<script src="assets/js/app.js"></script>
+<script src="assets/js/i18n.js?v=4"></script>
+<script src="assets/js/app.js?v=4"></script>
 </body>
 </html>
