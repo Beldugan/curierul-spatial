@@ -1,8 +1,8 @@
 # 🚀 Curierul spațial
 
-Joc de fizică pentru **Fizica distractivă 05 — Leneșul, greul și împingerea înapoi**: inerția, masa ca măsură a inerției și acțiunea-reacțiunea. E gândit pentru un copil de 8–9 ani (Year 4, sistemul britanic). Copilul pilotează o navă de marfă până la o stație spațială. În spațiu nu există frecare, așa că fizica nu mai e ascunsă: devine chiar regula jocului. Fără biblioteci externe, fără internet: dublu-click pe `index.html`.
+Joc de fizică pentru **Fizica distractivă 05 — Leneșul, greul și împingerea înapoi**: inerția, masa ca măsură a inerției, acțiunea-reacțiunea și **volantul, bateria care se învârte**. E gândit pentru un copil de 8–9 ani (Year 4, sistemul britanic). Copilul pilotează o navă de marfă până la o stație spațială. În spațiu nu există frecare, așa că fizica nu mai e ascunsă: devine chiar regula jocului. Fără biblioteci externe, fără internet: dublu-click pe `index.html`.
 
-## Cele patru misiuni
+## Cele cinci misiuni
 
 | # | Misiunea | Principiul | Ce se întâmplă |
 |---|---|---|---|
@@ -10,12 +10,21 @@ Joc de fizică pentru **Fizica distractivă 05 — Leneșul, greul și împinger
 | 2 | **Containerul greu** | masa | Nava (1 t) prinde un container de 2 t. Căsuța „Un puf schimbă viteza cu” scade de la **1,00** la **0,33 m/s**. În clipa prinderii, nava încetinește singură, pentru că containerul „leneș” o ține în loc. |
 | 3 | **Fără combustibil!** | acțiune–reacțiune | Un astronaut în derivă, fără combustibil, se poate întoarce la stație doar **aruncând obiecte**: cheia (2 kg), ciocanul (4 kg), cutia cu scule (10 kg). Arunci spre stânga și ești împins spre dreapta. Cu cât obiectul e mai greu, cu atât împingerea e mai mare. Săgețile roșie și albastră sunt mereu egale. |
 | 4 | **Livrare de urgență** | toate trei | Un container de 4 t, un culoar printre asteroizi și o andocare sub 1 m/s, cu combustibil puțin. |
+| 5 | **Noaptea pe stație** | volantul | Ziua, panourile solare învârt un volant (îl „încarcă”); noaptea, în umbra Pământului, volantul ține luminile aprinse. Copilul alege masa (20 / 60 kg), unde stă masa (la mijloc / pe margine) și lagărul (obișnuit, în aer / magnetic, în vid). Doar volantul greu, cu masa pe margine, ține toată noaptea; frecarea îi fură o parte din energie. |
 
 La fiecare puf apar flacăra și **două săgeți egale, în sensuri opuse**: gazul într-o parte, nava în cealaltă. Săgeata verde arată în permanență viteza, deci și inerția: nava merge pe direcția ei până primește un alt puf.
 
-La final, fiecare misiune reușită dă **1–3 stele**, după cât de puțin combustibil (sau câte puține obiecte) ai folosit, și deschide o fișă **„Ai descoperit”** cu un exemplu **„În viața reală”**: centura de siguranță, coșul de supermarket plin, rachetele, rucsacul-rachetă SAFER al astronauților, navele de marfă care aprovizionează Stația Spațială Internațională. Stelele rămân salvate în browser (12 în total).
+La final, fiecare misiune reușită dă **1–3 stele**, după cât de puțin combustibil (sau câte puține obiecte) ai folosit, și deschide o fișă **„Ai descoperit”** cu un exemplu **„În viața reală”**: centura de siguranță, coșul de supermarket plin, rachetele, rucsacul-rachetă SAFER al astronauților, navele de marfă care aprovizionează Stația Spațială Internațională. Stelele rămân salvate în browser (15 în total).
 
-**Testul de pilot**: 6 întrebări cu explicație imediată, cu variantele amestecate la fiecare reluare.
+## Laboratorul volantului
+
+Un tab separat, cu trei demonstrații:
+
+1. **Două roți de 6 kg**: una cu masa la mijloc, una cu masa pe margine. Aceeași împingere o învârte pe prima de 2 ori mai repede. La aceeași viteză, roata cu masa pe margine ține de 2 ori mai multă energie și, la aceeași frână, se oprește de 2 ori mai târziu.
+2. **Viteza × 2 → energia × 4**: „cuburi de energie” pentru viteza × 1, × 2, × 3 (1, 4, 9) și pentru un volant de 2 ori mai greu (dublu). E înmulțire de Year 4: n × n.
+3. **Volantul și bateria, față în față** (bateria chimică / bateria mecanică) și **unde mai găsești volanți**: mașinuțele de jucărie cu volant, roata olarului, titirezul, roata bicicletei, motorul mașinii, volanții de stocare de lângă rețeaua electrică.
+
+**Testul de pilot**: 8 întrebări cu explicație imediată, cu variantele amestecate la fiecare reluare.
 
 ## Fizica din spatele jocului
 
@@ -23,6 +32,7 @@ La final, fiecare misiune reușită dă **1–3 stele**, după cât de puțin co
 - La prinderea containerului se conservă impulsul: viteza navei se împarte la masa totală.
 - La aruncarea unui obiect: viteza astronautului se schimbă cu *masa obiectului × 10 m/s / masa rămasă*. Se conservă impulsul.
 - Fără frecare și fără gravitație în scenă: tot ce se mișcă își păstrează viteza.
+- Volantul: energia = ½ · I · ω², unde I = masa × (cât de departe de ax stă ea). Încărcare cu putere constantă, viteză maximă limitată (altfel s-ar rupe), pierderi prin frecare de 8 %/s în aer și 0,3 %/s în vid, pe lagăr magnetic.
 
 ## Comenzi
 

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Curierul spațial</title>
-<meta name="description" content="Joc de fizică: pilotează o navă de marfă până la stația spațială. Inerția, masa și acțiunea-reacțiune, în 4 misiuni. Fizica distractivă 05.">
+<meta name="description" content="Joc de fizică: pilotează o navă de marfă până la stația spațială. Inerția, masa, acțiunea-reacțiunea și volantul care înmagazinează energie, în 5 misiuni și un laborator. Fizica distractivă 05.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
 <link rel="stylesheet" href="assets/css/style.css">
 <link rel="stylesheet" href="assets/css/game.css">
@@ -27,6 +27,7 @@
 
   <nav class="tabs" role="tablist">
     <button role="tab" id="tab-game" aria-selected="true" data-i18n="tab.game">🚀 Misiunile</button>
+    <button role="tab" id="tab-lab" aria-selected="false" data-i18n="tab.lab">⚙️ Laboratorul volantului</button>
     <button role="tab" id="tab-quiz" aria-selected="false" data-i18n="tab.quiz">❓ Testul de pilot</button>
   </nav>
 
@@ -56,11 +57,11 @@
     </div>
 
     <div class="hud">
-      <div class="tile"><div class="k" data-i18n="hud.speed">Viteza</div><div class="v" id="hSpeed">0,0 m/s</div>
+      <div class="tile"><div class="k" id="hSpeedK">Viteza</div><div class="v" id="hSpeed">0,0 m/s</div>
         <div class="meter speedmeter"><span id="hSpeedBar"></span><i id="hLimitMark"></i></div></div>
-      <div class="tile"><div class="k" data-i18n="hud.limit">Andocare sigură</div><div class="v" id="hLimit">—</div></div>
-      <div class="tile"><div class="k" data-i18n="hud.mass">Masa</div><div class="v" id="hMass">—</div></div>
-      <div class="tile"><div class="k" data-i18n="hud.dv">Un puf schimbă viteza cu</div><div class="v" id="hDv">—</div></div>
+      <div class="tile"><div class="k" id="hLimitK">Andocare sigură</div><div class="v" id="hLimit">—</div></div>
+      <div class="tile"><div class="k" id="hMassK">Masa</div><div class="v" id="hMass">—</div></div>
+      <div class="tile"><div class="k" id="hDvK">Un puf schimbă viteza cu</div><div class="v" id="hDv">—</div></div>
       <div class="tile"><div class="k" id="hFuelK">—</div><div class="v" id="hFuel">—</div></div>
     </div>
 
@@ -74,6 +75,19 @@
     </div>
     <!-- comenzi astronaut -->
     <div class="throw hidden" id="padThrow"></div>
+    <!-- comenzi volant (misiunea 5) -->
+    <div class="flypad hidden" id="padFly">
+      <div class="optgrp"><span class="ol" data-i18n="fw.massQ">Cât de greu e volantul?</span>
+        <button class="opt" data-k="mass" data-v="light" data-i18n="fw.light">Ușor · 20 kg</button>
+        <button class="opt" data-k="mass" data-v="heavy" data-i18n="fw.heavy">Greu · 60 kg</button></div>
+      <div class="optgrp"><span class="ol" data-i18n="fw.posQ">Unde stă masa?</span>
+        <button class="opt" data-k="pos" data-v="mid" data-i18n="fw.mid">Aproape de mijloc</button>
+        <button class="opt" data-k="pos" data-v="rim" data-i18n="fw.rim">Pe margine</button></div>
+      <div class="optgrp"><span class="ol" data-i18n="fw.bearQ">Pe ce se învârte?</span>
+        <button class="opt" data-k="bear" data-v="air" data-i18n="fw.air">Lagăr obișnuit, în aer</button>
+        <button class="opt" data-k="bear" data-v="mag" data-i18n="fw.mag">Lagăr magnetic, în vid</button></div>
+      <button class="btn warm startfly" id="flyStart" data-i18n="fw.start">▶ Pornește orbita</button>
+    </div>
 
     <div class="controls">
       <button class="btn ghost" id="btnRestart" data-i18n="btn.restart">↺ Reîncepe misiunea</button>
@@ -82,9 +96,62 @@
     <div class="say" id="say"></div>
   </section>
 
+  <!-- ============ LABORATORUL VOLANTULUI ============ -->
+  <section id="p-lab" class="panel hidden">
+    <h2 data-i18n="lab.h">Laboratorul volantului — bateria care se învârte</h2>
+    <p class="muted" data-i18n="lab.intro">Un volant e o roată grea care se învârte. Datorită inerției, odată pornită, vrea să se învârtă mai departe — și ține în ea energia mișcării, ca o baterie. Poți s-o „încarci” (s-o învârți tot mai repede) și s-o „descarci” (să-i iei mișcarea ca să aprinzi un bec sau să miști o mașină).</p>
+
+    <h3 data-i18n="lab1.h">1. Două roți la fel de grele. Care e mai leneșă?</h3>
+    <p class="muted" data-i18n="lab1.hint">Amândouă au 6 kg. La prima, greutățile stau aproape de mijloc. La a doua, stau pe margine. Împinge-le la fel de tare, apoi adu-le la aceeași viteză și frânează-le la fel.</p>
+    <div class="stage"><canvas id="cvLab1" width="900" height="300"></canvas></div>
+    <div class="controls">
+      <button class="btn" id="l1Push" data-i18n="lab1.push">👋 Împinge-le la fel de tare</button>
+      <button class="btn" id="l1Same" data-i18n="lab1.same">⚡ Adu-le la aceeași viteză</button>
+      <button class="btn warm" id="l1Brake" data-i18n="lab1.brake">✋ Frânează-le la fel</button>
+      <button class="btn ghost" id="l1Stop" data-i18n="lab1.stop">↺ Oprește tot</button>
+    </div>
+    <div class="say" id="sayLab1"></div>
+
+    <h3 data-i18n="lab2.h">2. De două ori mai repede = de câte ori mai multă energie?</h3>
+    <p class="muted" data-i18n="lab2.hint">Alege viteza volantului și privește câte „cuburi de energie” ține în el. Fiecare cub e o porție de energie, la fel de mare.</p>
+    <div class="stage"><canvas id="cvLab2" width="900" height="250"></canvas></div>
+    <div class="controls">
+      <span class="field" data-i18n="lab2.speed">Viteza:</span>
+      <button class="btn ghost l2s" data-n="1">× 1</button>
+      <button class="btn ghost l2s" data-n="2">× 2</button>
+      <button class="btn ghost l2s" data-n="3">× 3</button>
+      <label class="field"><input type="checkbox" id="l2Heavy"> <span data-i18n="lab2.heavy">volant de 2 ori mai greu</span></label>
+    </div>
+    <div class="say" id="sayLab2"></div>
+
+    <h3 data-i18n="lab3.h">3. Volantul și bateria, față în față</h3>
+    <table class="data">
+      <thead><tr><th></th><th data-i18n="cmp.bat">🔋 Bateria</th><th data-i18n="cmp.fw">⚙️ Volantul</th></tr></thead>
+      <tbody>
+        <tr><td data-i18n="cmp.r1">Cum ține energia?</td><td data-i18n="cmp.r1a">în substanțe chimice</td><td data-i18n="cmp.r1b">în mișcare — energia de rotație</td></tr>
+        <tr><td data-i18n="cmp.r2">Cum o încarci?</td><td data-i18n="cmp.r2a">curentul schimbă substanțele dinăuntru (durează ore)</td><td data-i18n="cmp.r2b">un motor o învârte tot mai repede (poate fi foarte rapid)</td></tr>
+        <tr><td data-i18n="cmp.r3">Cum o descarci?</td><td data-i18n="cmp.r3a">substanțele se schimbă înapoi și dau curent</td><td data-i18n="cmp.r3b">roata învârte un generator și încetinește</td></tr>
+        <tr><td data-i18n="cmp.r4">De câte ori o poți folosi?</td><td data-i18n="cmp.r4a">de câteva sute sau mii de ori, apoi obosește</td><td data-i18n="cmp.r4b">de foarte, foarte multe ori</td></tr>
+        <tr><td data-i18n="cmp.r5">Se golește singură?</td><td data-i18n="cmp.r5a">foarte încet</td><td data-i18n="cmp.r5b">da, dacă are frecare — de aceea cei buni stau în vid, pe lagăre magnetice</td></tr>
+        <tr><td data-i18n="cmp.r6">Cum îi spunem pe scurt?</td><td data-i18n="cmp.r6a">bateria chimică</td><td data-i18n="cmp.r6b">bateria mecanică</td></tr>
+      </tbody>
+    </table>
+
+    <h3 data-i18n="lab4.h">Unde mai găsești volanți</h3>
+    <ul class="where">
+      <li data-i18n="lab4.a">🚗 Mașinuțele de jucărie „cu volant”: le freci de câteva ori de podea și apoi merg singure. Înăuntru au o rotiță grea care se învârte.</li>
+      <li data-i18n="lab4.b">🏺 Roata olarului: o pornești cu piciorul și se învârte singură destul timp cât să modelezi vasul.</li>
+      <li data-i18n="lab4.c">🌀 Titirezul: e un volant mic. Cât se învârte repede, stă drept.</li>
+      <li data-i18n="lab4.d">🚲 Roata bicicletei întoarse cu roțile în sus: o învârți o dată cu mâna și se mai învârte mult timp singură.</li>
+      <li data-i18n="lab4.e">⚡ Lângă unele rețele electrice există săli cu volanți mari, în cutii fără aer, care înmagazinează energie și o dau înapoi în câteva clipe, când e nevoie.</li>
+      <li data-i18n="lab4.f">🔧 Motorul mașinii are un volant greu, ca să se învârtă lin între două „explozii” din cilindri.</li>
+    </ul>
+    <div class="say good" data-i18n="lab.try">Încearcă acum misiunea 5, „Noaptea pe stație”: alege cel mai bun volant ca stația să aibă lumină toată noaptea!</div>
+  </section>
+
   <!-- ============ QUIZ ============ -->
   <section id="p-quiz" class="panel hidden">
-    <h2 data-i18n="quiz.h">Testul de pilot — 6 întrebări</h2>
+    <h2 data-i18n="quiz.h">Testul de pilot — 8 întrebări</h2>
     <div id="quizBox"></div>
     <div class="controls">
       <button class="btn ghost" id="btnQuizReset" data-i18n="quiz.again">Încă o dată</button>
