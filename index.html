@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ro" data-theme="">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Curierul spațial</title>
+<meta name="description" content="Joc de fizică: pilotează o navă de marfă până la stația spațială. Inerția, masa și acțiunea-reacțiune, în 4 misiuni. Fizica distractivă 05.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/game.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="inner">
+    <h1 data-i18n="app.title">Curierul spațial</h1>
+    <div class="badges">
+      <button class="pill" id="langRo" aria-pressed="true">RO</button>
+      <button class="pill" id="langEn" aria-pressed="false">EN</button>
+      <button class="pill" id="themeBtn" title="light / dark">◐</button>
+    </div>
+    <p data-i18n="app.sub">Fizica distractivă 05 · inerția, masa și acțiunea-reacțiune · un joc cu nave, colete și o stație spațială</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" id="tab-game" aria-selected="true" data-i18n="tab.game">🚀 Misiunile</button>
+    <button role="tab" id="tab-quiz" aria-selected="false" data-i18n="tab.quiz">❓ Testul de pilot</button>
+  </nav>
+
+  <!-- ============ JOCUL ============ -->
+  <section id="p-game" class="panel">
+    <div class="missions" id="missions"></div>
+
+    <div class="brief" id="brief"></div>
+
+    <div class="stage game-stage" id="stage">
+      <canvas id="cv" width="960" height="540"></canvas>
+      <div class="overlay hidden" id="overlay">
+        <div class="card">
+          <div class="big" id="ovTitle"></div>
+          <div class="stars" id="ovStars"></div>
+          <p id="ovText"></p>
+          <div class="learn hidden" id="ovLearn">
+            <h3 id="ovLearnH"></h3><p id="ovLearnP"></p>
+            <h3 data-i18n="ov.real">În viața reală</h3><p id="ovReal"></p>
+          </div>
+          <div class="ovbtns">
+            <button class="btn ghost" id="ovRetry" data-i18n="ov.retry">Încearcă din nou</button>
+            <button class="btn" id="ovNext" data-i18n="ov.next">Misiunea următoare →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hud">
+      <div class="tile"><div class="k" data-i18n="hud.speed">Viteza</div><div class="v" id="hSpeed">0,0 m/s</div>
+        <div class="meter speedmeter"><span id="hSpeedBar"></span><i id="hLimitMark"></i></div></div>
+      <div class="tile"><div class="k" data-i18n="hud.limit">Andocare sigură</div><div class="v" id="hLimit">—</div></div>
+      <div class="tile"><div class="k" data-i18n="hud.mass">Masa</div><div class="v" id="hMass">—</div></div>
+      <div class="tile"><div class="k" data-i18n="hud.dv">Un puf schimbă viteza cu</div><div class="v" id="hDv">—</div></div>
+      <div class="tile"><div class="k" id="hFuelK">—</div><div class="v" id="hFuel">—</div></div>
+    </div>
+
+    <!-- comenzi navă -->
+    <div class="pad" id="padShip">
+      <button class="tbtn up" data-dir="up" aria-label="up">▲</button>
+      <button class="tbtn left" data-dir="left" aria-label="left">◀</button>
+      <button class="tbtn right" data-dir="right" aria-label="right">▶</button>
+      <button class="tbtn down" data-dir="down" aria-label="down">▼</button>
+      <p class="padhint muted" data-i18n="pad.hint">Fiecare apăsare = un puf de gaz. Merg și săgețile de pe tastatură.</p>
+    </div>
+    <!-- comenzi astronaut -->
+    <div class="throw hidden" id="padThrow"></div>
+
+    <div class="controls">
+      <button class="btn ghost" id="btnRestart" data-i18n="btn.restart">↺ Reîncepe misiunea</button>
+      <span class="total" id="totalStars"></span>
+    </div>
+    <div class="say" id="say"></div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section id="p-quiz" class="panel hidden">
+    <h2 data-i18n="quiz.h">Testul de pilot — 6 întrebări</h2>
+    <div id="quizBox"></div>
+    <div class="controls">
+      <button class="btn ghost" id="btnQuizReset" data-i18n="quiz.again">Încă o dată</button>
+      <span class="score" id="vScore"></span>
+    </div>
+  </section>
+
+</div>
+
+<footer class="bot">
+  <p data-i18n="foot.1">Lecția pornește de la experimentele din Virgil Atanasiu, „Fizica distractivă”, E.D.P. București, 1964 — „Căderea monedei” (p. 13) și „Morișcă hidraulică” (p. 35).</p>
+  <p data-i18n="foot.2">Aplicație didactică · Fizica distractivă 05 · funcționează offline, fără internet.</p>
+</footer>
+
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
